@@ -1,0 +1,33 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.zju.ese.mediaservice"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="15" />
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <application android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:theme="@style/AppTheme">
+        
+        <activity
+            android:name=".MediaServiceMonitor"
+            android:label="@string/title_activity_media_service_monitor" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+	
+	<receiver android:name=".StartupReceiver" android:label="@string/app_name">
+	　 <intent-filter>
+	　   <action android:name="android.intent.action.BOOT_COMPLETED" />
+	　   <category android:name="android.intent.category.LAUNCHER" />
+	　 </intent-filter>
+	</receiver>
+	
+	<service android:name=".MediaService"/>
+    </application>
+
+</manifest>
