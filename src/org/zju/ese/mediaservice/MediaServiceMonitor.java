@@ -2,53 +2,81 @@ package org.zju.ese.mediaservice;
 
 import java.util.List;
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 
 public class MediaServiceMonitor extends Activity {
-	Switch switchButton;
+	MediaPlayerServiceConnection conn = new MediaPlayerServiceConnection();
+	Button openButton;
+	Button closeButton;
 	EditText editText;
+	TextView statusText;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_service_monitor);
-        switchButton = (Switch)findViewById(R.id.switch1);
         editText = (EditText)findViewById(R.id.editText);
-        if(isServiceRunning(this,"org.zju.ese.mediaservice.MediaService"))
-        	switchButton.setChecked(true);
+        
+        openButton = (Button)findViewById(R.id.open_button);
+        closeButton = (Button)findViewById(R.id.close_button);
+        statusText = (TextView)findViewById(R.id.statusView);
+        if(isServiceRunning(this,"org.zju.ese.mediacontrol.MediaService"))
+        	statusText.setText("已开启");
         else
-        	switchButton.setChecked(false);
+        	statusText.setText("已关闭");
         
-        //Intent intent = new Intent(this, MediaService.class);
-        //startService(intent);
-        
-        switchButton.setOnClickListener(new OnClickListener(){
+//        Intent i = new Intent();
+//		i.setClassName("com.android.music","com.android.music.MediaPlaybackService");
+//        this.bindService(i, conn, Context.BIND_AUTO_CREATE);
+
+        openButton.setOnClickListener(new OnClickListener(){
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
-				if(MediaServiceMonitor.this.switchButton.isChecked())
-				{
-					Intent intent = new Intent(MediaServiceMonitor.this, MediaService.class);
-					intent.putExtra("port",Integer.parseInt(editText.getText().toString()));
-					startService(intent);
-				}
-				else
-				{
-					Intent intent = new Intent(MediaServiceMonitor.this, MediaService.class);
-					intent.putExtra("port",Integer.parseInt(editText.getText().toString()));
-			        stopService(intent);
-				}
+				statusText.setText("已开启");
+		        
+		        Intent intent = new Intent(MediaServiceMonitor.this, MediaService.class);
+				intent.putExtra("port",Integer.parseInt(editText.getText().toString()));
+				startService(intent);
 			}
-        	
+        });
+        
+        closeButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				statusText.setText("已关闭");
+				Intent intent = new Intent(MediaServiceMonitor.this, MediaService.class);
+				intent.putExtra("port",Integer.parseInt(editText.getText().toString()));
+		        stopService(intent);
+//				try {
+//					conn.mService.openFile("/mnt/sdcard/ftp/花火.mp3");
+//					conn.mService.play();
+//				} catch (RemoteException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+				
+//				Intent it = new Intent(Intent.ACTION_VIEW);
+//				it.setDataAndType(Uri.parse("/mnt/sdcard/ftp/花火.mp3"), "audio/mp3");
+//				it.setComponent(new ComponentName("com.android.music","com.android.music.MediaPlaybackActivity"));
+//				startActivity(it);
+			}
         });
     }
     
