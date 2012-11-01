@@ -35,10 +35,10 @@ import android.os.Message;
 import android.os.RemoteException;
 
 public class MediaService extends Service {
-	private MediaPlayerServiceConnection conn;
+	private MediaPlayerServiceConnection conn = new MediaPlayerServiceConnection();
 	private SocketAcceptor acceptor;
 	private FtpServer mFtpServer;
-	
+	int port;
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -47,7 +47,7 @@ public class MediaService extends Service {
 
 	@Override
 	public void onStart(android.content.Intent intent, int startId) {
-		int port = intent.getExtras().getInt("port");
+		port = intent.getExtras().getInt("port");
 		RequestHandle handler = new RequestHandle(this.handler);
 		acceptor = new NioSocketAcceptor();
         acceptor.setHandler(handler);
@@ -63,7 +63,6 @@ public class MediaService extends Service {
         
         Intent i = new Intent();
 		i.setClassName("com.android.music","com.android.music.MediaPlaybackService");
-		conn = new MediaPlayerServiceConnection();
         this.bindService(i, conn, Context.BIND_AUTO_CREATE);
         
         startFtpServer();
@@ -81,31 +80,14 @@ public class MediaService extends Service {
 		acceptor.unbind();
 	}
 	
-	private class MediaPlayerServiceConnection implements ServiceConnection {
-		public IMediaPlaybackService mService;
-		
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			// TODO Auto-generated method stub
-			mService = IMediaPlaybackService.Stub.asInterface(service);
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
-	
 	private void startFtpServer() {
 		FtpServerFactory serverFactory = new FtpServerFactory();
 
 		ListenerFactory factory = new ListenerFactory();
 
 		// set the port of the listener
-		int port = 2221;
-		factory.setPort(port);
+		//int port = 2221;
+		factory.setPort(port + 100);
 
 		// replace the default listener
 		serverFactory.addListener("default", factory.createListener());
@@ -149,9 +131,14 @@ public class MediaService extends Service {
 					openApp("com.android.music");
 					break;
 				case RequestMessage.OPENFILE:
-					conn.mService.openFile(path);
-					conn.mService.play();
-					openApp("com.android.music");
+					if(path != null)
+					{
+						if(!path.contains("/"))
+							path = "/sdcard/ftp/"+ path + ".mp3";
+						conn.mService.openFile(path);
+						conn.mService.play();
+						openApp("com.android.music");
+					}
 					
 //					Intent it = new Intent(Intent.ACTION_VIEW);
 //					it.setDataAndType(Uri.parse(path), "audio/mp3");
@@ -161,8 +148,6 @@ public class MediaService extends Service {
 				case RequestMessage.PICTURE:
 					if(path != null)
 					{
-						if(!path.contains("/"))
-							path = "/sdcard/ftp/"+ path + ".mp3";
 						File file = new File(path);
 			            Intent intent = new Intent(Intent.ACTION_VIEW);
 			            intent.setDataAndType(Uri.fromFile(file), "image/*");
